@@ -15,4 +15,12 @@ public class Point {
             throw new InvalidParameterException("y must be grater than zero");
         }
     }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
 }

@@ -1,7 +1,8 @@
 public class Plant implements Creature{
     private int x;
     private int y;
-    private boolean eaten = false;
+    private int maxAmountOnLocation;
+    private boolean isAlive = true;
     private final Island currentIsland;
 
     public Plant(Island island){
@@ -31,12 +32,8 @@ public class Plant implements Creature{
             throw new IllegalArgumentException("y must be greater than zero");
         }
     }
-
-    public void setEaten(boolean eat){
-        this.eaten = true;
-    }
-    public boolean isEaten(){
-        return this.eaten;
+    public int getWeight(){
+        return 1;
     }
     @Override
     public void reproduce() {
@@ -47,6 +44,8 @@ public class Plant implements Creature{
 
     @Override
     public void die() {
-        currentIsland.getLocation(this.getX(), this.getY()).getPlants().remove(this);
+        if (!currentIsland.getLocation(this.getX(), this.getY()).getPlants().isEmpty() && currentIsland.getLocation(this.getX(), this.getY()).getPlants().contains(this)) {
+            currentIsland.getLocation(this.getX(), this.getY()).getPlants().remove(this);
+        }
     }
 }

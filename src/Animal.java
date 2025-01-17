@@ -8,7 +8,7 @@ public abstract class Animal implements Creature{
     private int weight;
     private int maxAmountOnLocation;
     private int movementSpeed;
-    private int amountOfFoodToEat;
+    private int maxSaturation;
     private final Island currentIsland;
 
 
@@ -23,7 +23,7 @@ public abstract class Animal implements Creature{
             this.weight = Integer.valueOf(prop.getProperty(weightKey));
             this.maxAmountOnLocation = Integer.valueOf(prop.getProperty(maxAmountOnLocationKey));
             this.movementSpeed = Integer.valueOf(prop.getProperty(movementSpeedKey));
-            this.amountOfFoodToEat = Integer.valueOf(prop.getProperty(amountOfFoodToEatKey));
+            this.maxSaturation = Integer.valueOf(prop.getProperty(amountOfFoodToEatKey));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -45,8 +45,8 @@ public abstract class Animal implements Creature{
         return currentIsland;
     }
 
-    public int getAmountOfFoodToEat() {
-        return amountOfFoodToEat;
+    public int getMaxSaturation() {
+        return maxSaturation;
     }
 
     public int getX() {
