@@ -1,4 +1,5 @@
 public interface Creature {
-    public void reproduce();
-    public void die();
+    void reproduce();
+
+    void die();
 }

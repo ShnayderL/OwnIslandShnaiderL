@@ -1,75 +1,90 @@
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class Predator extends Animal{
-    private final Location currentLocation = this.getCurrentIsland().getLocation(this.getX(), this.getY());
-    private int saturation;
-    private boolean isAlive;
+public abstract class Predator extends Animal {
     private int timesMoved;
 
-    public Predator(Island island, String weightKey, String maxAmountOnLocationKey, String movementSpeedKey, String amountOfFoodToEatKey) {
-        super(island, weightKey, maxAmountOnLocationKey, movementSpeedKey, amountOfFoodToEatKey);
-        this.saturation = 1;
-        this.isAlive = true;
+    public Predator(Island island, String weightKey, String movementSpeedKey, String amountOfFoodToEatKey, Location location) {
+        super(island, weightKey, movementSpeedKey, amountOfFoodToEatKey, location);
         this.timesMoved = 0;
     }
 
-    @Override
-    public void reproduce() {
-        if (currentLocation.getPredators().size() > 1 && saturation == getMaxSaturation()) {
-            currentLocation.addPredator(new Wolf(this.getCurrentIsland()));
-            saturation = 1;
-        }
-    }
 
     @Override
     public void die() {
-        if (!currentLocation.getPredators().isEmpty() && currentLocation.getPredators().contains(this)) {
-            this.isAlive = false;
-            currentLocation.removePredator(this);
+        if (!isAlive()) return;
+        synchronized (getCurrentLocation().getLock()) {
+            if (getCurrentLocation().getPredators().contains(this)) {
+                setAlive(false);
+                getCurrentLocation().getPredators().remove(this);
+            }
         }
+        getCurrentIsland().increasePredatorsDied(1);
     }
+
 
     @Override
     public void move() {
-        if(currentLocation.getPredators().contains(this)){
-            while(this.isAlive){
-                if(timesMoved > 2){
-                    this.die();
-                }
-                int dx = ThreadLocalRandom.current().nextInt(-getMovementSpeed(), getMovementSpeed()+1);
-                int dy = ThreadLocalRandom.current().nextInt(-getMovementSpeed(), getMovementSpeed()+1);
+        if (!isAlive()) return;
 
-                int newX = Math.max(0, currentLocation.getCoordinatesOfLocation().getX() + dx);
-                int newY = Math.max(0, currentLocation.getCoordinatesOfLocation().getY() + dy);
-                while(newY > this.getCurrentIsland().getISLAND_HEIGHT() || newX > this.getCurrentIsland().getISLAND_WIDTH()){
-                    if(newY > this.getCurrentIsland().getISLAND_HEIGHT()){
-                        newY -= this.getCurrentIsland().getISLAND_HEIGHT();
-                    }
-                    if(newX > this.getCurrentIsland().getISLAND_WIDTH()){
-                        newX -= this.getCurrentIsland().getISLAND_WIDTH();
-                    }
+        if (timesMoved > 2) {
+            die();
+            return;
+        }
+
+        int dx = ThreadLocalRandom.current().nextInt(-getMovementSpeed(), getMovementSpeed() + 1);
+        int dy = ThreadLocalRandom.current().nextInt(-getMovementSpeed(), getMovementSpeed() + 1);
+
+        int newX = Math.max(0, getCurrentLocation().getCoordinatesOfLocation().getX() + dx);
+        int newY = Math.max(0, getCurrentLocation().getCoordinatesOfLocation().getY() + dy);
+
+        int maxX = this.getCurrentIsland().getISLAND_WIDTH();
+        int maxY = this.getCurrentIsland().getISLAND_HEIGHT();
+
+        newX = (newX + maxX) % maxX;
+        newY = (newY + maxY) % maxY;
+
+        Location newLocation = this.getCurrentIsland().getLocation(new Point(newX, newY));
+        if (newLocation == null) {
+            newLocation = this.getCurrentIsland().getLocation(new Point(0, 0));
+        }
+
+        ReentrantLock currentLock = getCurrentLocation().getLock();
+        ReentrantLock newLocationLock = newLocation.getLock();
+
+        if (newLocationLock.tryLock()) {
+            try {
+                synchronized (getCurrentLocation().getLock()) {
+                    getCurrentLocation().getPredators().remove(this);
                 }
-                Location newLocation = this.getCurrentIsland().getLocation(newX, newY);
-                synchronized (currentLocation.getLock()) {
-                    newLocation.getHerbivores().add(this);
-                    currentLocation.getHerbivores().remove(this);
+                synchronized (newLocation.getLock()) {
+                    newLocation.getPredators().add(this);
                 }
+                this.setCurrentLocation(newLocation);
                 timesMoved++;
+            } finally {
+                newLocationLock.unlock();
             }
         }
     }
 
     @Override
     public void eat() {
-        while (saturation < getMaxSaturation()) {
+        if (!isAlive()) return;
+
+        while (getSaturation() < getMaxSaturation()) {
             Animal target;
-            synchronized (currentLocation.getLock()) {
-                if (currentLocation.getHerbivores().isEmpty()) {
+
+            synchronized (getCurrentLocation().getLock()) {
+                if (getCurrentLocation().getHerbivores().isEmpty()) {
                     break;
                 }
-                target = currentLocation.getHerbivores().removeFirst();
+                target = getCurrentLocation().getHerbivores().getFirst();
+                target.die();
             }
-            saturation = Math.min(saturation + target.getWeight(), getMaxSaturation());
+            if (target != null) {
+                setSaturation(Math.min(getSaturation() + target.getWeight(), getMaxSaturation()));
+            }
         }
     }
 }

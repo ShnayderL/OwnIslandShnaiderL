@@ -1,51 +1,33 @@
+import java.util.concurrent.TimeUnit;
+
 public class Plant implements Creature{
-    private int x;
-    private int y;
-    private int maxAmountOnLocation;
-    private boolean isAlive = true;
+    private boolean isAlive;
     private final Island currentIsland;
+    private Location currentLocation;
 
-    public Plant(Island island){
+    public Plant(Island island, Location location){
         this.currentIsland = island;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        if(x > 0){
-            this.x = x;
-        } else{
-            throw new IllegalArgumentException("x must be greater than zero");
-        }
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        if(y > 0){
-            this.y = y;
-        } else{
-            throw new IllegalArgumentException("y must be greater than zero");
-        }
+        this.currentLocation = location;
+        this.isAlive = true;
     }
     public int getWeight(){
         return 1;
     }
     @Override
     public void reproduce() {
-        if(currentIsland.getLocation(this.getX(), this.getY()).getPlants().size() > 1){
-            currentIsland.getLocation(this.getX(), this.getY()).getPlants().add(new Plant(currentIsland));
+        if(currentLocation.getPlants().size() > 1){
+            currentLocation.getPlants().add(new Plant(currentIsland, currentLocation));
         }
     }
-
+    @Override
+    public String toString() {
+        return "\uD83C\uDF31";
+    }
     @Override
     public void die() {
-        if (!currentIsland.getLocation(this.getX(), this.getY()).getPlants().isEmpty() && currentIsland.getLocation(this.getX(), this.getY()).getPlants().contains(this)) {
-            currentIsland.getLocation(this.getX(), this.getY()).getPlants().remove(this);
+        isAlive = false;
+        if (currentLocation.getPlants().contains(this)) {
+            currentLocation.getPlants().remove(this);
         }
     }
 }

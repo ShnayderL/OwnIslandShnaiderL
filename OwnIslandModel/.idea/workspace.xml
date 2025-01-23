@@ -5,13 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ef0a5908-7c12-4d09-a976-ca49c1edf3fb" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/Animal.java" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Animal.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/Herbivorous.java" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Herbivorous.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/Island.java" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Island.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/Location.java" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Location.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/Plant.java" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Plant.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/Point.java" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Point.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/Predator.java" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Predator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/Sheep.java" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Sheep.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/Wolf.java" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Wolf.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/animalconfig.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../src/animalconfig.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,6 +70,9 @@
       <workItem from="1736851551512" duration="5000" />
       <workItem from="1736967870230" duration="650000" />
       <workItem from="1737098641520" duration="7000" />
+      <workItem from="1737142844092" duration="6000" />
+      <workItem from="1737366307317" duration="10000" />
+      <workItem from="1737624186336" duration="36000" />
     </task>
     <servers />
   </component>

@@ -1,5 +1,21 @@
 public class Sheep extends Herbivorous {
-    public Sheep(Island island) {
-        super(island, "sheepWeight", "sheepMaxAmountOnLocation", "sheepMovementSpeed", "sheepAmountOfFoodToEat");
+    public Sheep(Island island, Location location) {
+        super(island, "sheepWeight", "sheepMovementSpeed", "sheepMaxSaturation", location);
+    }
+    @Override
+    public void reproduce() {
+        if (!isAlive()) return;
+
+        synchronized (getCurrentLocation().getLock()) {
+            if (getCurrentLocation().getHerbivores().size() > 1 && getSaturation() == this.getMaxSaturation()) {
+                getCurrentLocation().getHerbivores().add(new Sheep(getCurrentIsland(), getCurrentLocation()));
+                setSaturation(1);
+            }
+        }
+        this.getCurrentIsland().increaseHerbivoresBorn(1);
+    }
+    @Override
+    public String toString() {
+        return "\uD83D\uDC11";
     }
 }

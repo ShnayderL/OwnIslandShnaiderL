@@ -3,38 +3,59 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public abstract class Animal implements Creature{
-    private int x;
-    private int y;
     private int weight;
-    private int maxAmountOnLocation;
     private int movementSpeed;
     private int maxSaturation;
+    private boolean alive;
+    private int saturation;
+    private Location currentLocation;
     private final Island currentIsland;
 
 
-    public Animal(Island island, String weightKey, String maxAmountOnLocationKey, String movementSpeedKey, String amountOfFoodToEatKey) {
+    public Animal(Island island, String weightKey, String movementSpeedKey, String amountOfFoodToEatKey, Location location) {
         this.currentIsland = island;
-        setPropertyValues(weightKey, maxAmountOnLocationKey, movementSpeedKey, amountOfFoodToEatKey);
+        this.alive = true;
+        this.saturation = 1;
+        this.currentLocation = location;
+        setPropertyValues(weightKey, movementSpeedKey, amountOfFoodToEatKey);
     }
-    private void setPropertyValues(String weightKey, String maxAmountOnLocationKey, String movementSpeedKey, String amountOfFoodToEatKey) {
+    private void setPropertyValues(String weightKey, String movementSpeedKey, String amountOfFoodToEatKey) {
         Properties prop = new Properties();
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("animalconfig.properties")) {
             prop.load(inputStream);
-            this.weight = Integer.valueOf(prop.getProperty(weightKey));
-            this.maxAmountOnLocation = Integer.valueOf(prop.getProperty(maxAmountOnLocationKey));
-            this.movementSpeed = Integer.valueOf(prop.getProperty(movementSpeedKey));
-            this.maxSaturation = Integer.valueOf(prop.getProperty(amountOfFoodToEatKey));
+            this.weight = Integer.parseInt(prop.getProperty(weightKey));
+            this.movementSpeed = Integer.parseInt(prop.getProperty(movementSpeedKey));
+            this.maxSaturation = Integer.parseInt(prop.getProperty(amountOfFoodToEatKey));
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public int getWeight() {
-        return this.weight;
+    public boolean isAlive() {
+        return alive;
     }
 
-    public int getMaxAmountOnLocation() {
-        return maxAmountOnLocation;
+    public void setAlive(boolean alive) {
+        this.alive = alive;
+    }
+
+    public int getSaturation() {
+        return saturation;
+    }
+
+    public void setSaturation(int saturation) {
+        this.saturation = saturation;
+    }
+
+    public Location getCurrentLocation() {
+        return currentLocation;
+    }
+
+    public void setCurrentLocation(Location currentLocation) {
+        this.currentLocation = currentLocation;
+    }
+    public int getWeight() {
+        return this.weight;
     }
 
     public int getMovementSpeed() {
@@ -49,29 +70,6 @@ public abstract class Animal implements Creature{
         return maxSaturation;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        if(x > 0){
-            this.x = x;
-        } else{
-            throw new IllegalArgumentException("x must be greater than zero");
-        }
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        if(y > 0){
-            this.y = y;
-        } else{
-            throw new IllegalArgumentException("y must be greater than zero");
-        }
-    }
     public abstract void move();
     public abstract void eat();
 }
