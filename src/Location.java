@@ -1,5 +1,3 @@
-import org.w3c.dom.ls.LSOutput;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -10,8 +8,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Location {
     private final ReentrantLock lock = new ReentrantLock();
     private final Point coordinatesOfLocation;
-    private final List<Animal> herbivores = new CopyOnWriteArrayList<>();
-    private final List<Animal> predators = new CopyOnWriteArrayList<>();
+    private final List<Herbivorous> herbivores = new CopyOnWriteArrayList<>();
+    private final List<Predator> predators = new CopyOnWriteArrayList<>();
     private final List<Plant> plants = new CopyOnWriteArrayList<>();
     private final Island island;
     private volatile boolean isInitialized = false;
@@ -34,44 +32,38 @@ public class Location {
         return plants;
     }
 
-    public List<Animal> getPredators() {
+    public List<Predator> getPredators() {
         return predators;
     }
 
-    public List<Animal> getHerbivores() {
+    public List<Herbivorous> getHerbivores() {
         return herbivores;
     }
 
     public void init() {
-        lock.lock();
-        try {
-            if (isInitialized) return; // Якщо вже ініціалізовано, вийти.
+        if (isInitialized) return; // Якщо вже ініціалізовано, вийти.
 
-            Properties prop = new Properties();
-            int wolfMaxAmountOnLocation = 0;
-            int sheepMaxAmountOnLocation = 0;
-            int plantMaxAmountOnLocation = 0;
+        Properties prop = new Properties();
+        int wolfMaxAmountOnLocation = 0;
+        int sheepMaxAmountOnLocation = 0;
+        int plantMaxAmountOnLocation = 0;
 
-            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("animalconfig.properties")) {
-                if (inputStream == null) {
-                    throw new IOException("Configuration file not found!");
-                }
-                prop.load(inputStream);
-                wolfMaxAmountOnLocation = parseConfig(prop, "wolfMaxAmountOnLocation");
-                sheepMaxAmountOnLocation = parseConfig(prop, "sheepMaxAmountOnLocation");
-                plantMaxAmountOnLocation = parseConfig(prop, "plantMaxAmountOnLocation");
-            } catch (IOException e) {
-                e.printStackTrace();
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("animalconfig.properties")) {
+            if (inputStream == null) {
+                throw new IOException("Configuration file not found!");
             }
-
-            populateEntities(predators, wolfMaxAmountOnLocation, () -> new Wolf(island, this));
-            populateEntities(herbivores, sheepMaxAmountOnLocation, () -> new Sheep(island, this));
-            populateEntities(plants, plantMaxAmountOnLocation, () -> new Plant(island, this));
-
-            isInitialized = true;
-        } finally {
-            lock.unlock();
+            prop.load(inputStream);
+            wolfMaxAmountOnLocation = parseConfig(prop, "wolfMaxAmountOnLocation");
+            sheepMaxAmountOnLocation = parseConfig(prop, "sheepMaxAmountOnLocation");
+            plantMaxAmountOnLocation = parseConfig(prop, "plantMaxAmountOnLocation");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        populateEntities(predators, wolfMaxAmountOnLocation, () -> new Wolf(island, this));
+        populateEntities(herbivores, sheepMaxAmountOnLocation, () -> new Sheep(island, this));
+        populateEntities(plants, plantMaxAmountOnLocation, () -> new Plant(island, this));
+        isInitialized = true;
     }
 
     private int parseConfig(Properties prop, String key) {
@@ -88,6 +80,7 @@ public class Location {
             list.add(factory.create());
         }
     }
+
     public void shutdown() {
         executor.shutdown(); // Завершуємо роботу потоків
         try {
@@ -98,27 +91,48 @@ public class Location {
             executor.shutdownNow();
         }
     }
-    public void update() {
-        if(this.getPlants().size() + this.getPredators().size() + this.getHerbivores().size() > 2545){
-            executor.submit(() -> predators.forEach(Creature::die));
+    public void simulateLife() {
+        int simulationDurationMillis = 500; // Максимальний час для симуляції на одній локації (в мілісекундах)
 
-            executor.submit(() -> herbivores.forEach(Creature::die));
+        Callable<Void> predatorTask = () -> {
+            predators.forEach(predator -> {
+                predator.eat();
+                predator.reproduce();
+                predator.move();
+            });
+            return null;
+        };
 
-            executor.submit(() -> plants.forEach(Plant::die));
+        Callable<Void> herbivorousTask = () -> {
+            herbivores.forEach(herbivorous -> {
+                herbivorous.eat();
+                herbivorous.reproduce();
+                herbivorous.move();
+            });
+            return null;
+        };
+
+        Callable<Void> plantTask = () -> {
+            plants.forEach(Plant::reproduce);
+            return null;
+        };
+
+        // Створюємо список завдань для симуляції життя
+        List<Callable<Void>> tasks = List.of(predatorTask, herbivorousTask, plantTask);
+
+        try {
+            // Виконуємо всі завдання паралельно з обмеженням часу
+            List<Future<Void>> futures = executor.invokeAll(tasks, simulationDurationMillis, TimeUnit.MILLISECONDS);
+
+            // Перевіряємо, чи всі завдання завершились успішно
+            for (Future<Void> future : futures) {
+                if (!future.isDone()) {
+                    System.out.println("A task in location " + coordinatesOfLocation + " was not completed in time.");
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Відновлюємо статус перерваного потоку
         }
-        executor.submit(() -> predators.forEach(predator -> {
-            predator.eat();
-            predator.reproduce();
-            predator.move();
-        }));
-
-        executor.submit(() -> herbivores.forEach(herbivore -> {
-            herbivore.eat();
-            herbivore.reproduce();
-            herbivore.move();
-        }));
-
-        executor.submit(() -> plants.forEach(Plant::reproduce));
     }
 
     @FunctionalInterface

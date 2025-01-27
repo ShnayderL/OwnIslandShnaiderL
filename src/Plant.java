@@ -10,9 +10,6 @@ public class Plant implements Creature{
         this.currentLocation = location;
         this.isAlive = true;
     }
-    public int getWeight(){
-        return 1;
-    }
     @Override
     public void reproduce() {
         if(currentLocation.getPlants().size() > 1){

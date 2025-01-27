@@ -1,14 +1,32 @@
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class Predator extends Animal {
     private int timesMoved;
+    private int chanceToBeEatenByBoa;
+    private int chanceToBeEatenByBear;
+    private int chanceToBeEatenByEagle;
 
     public Predator(Island island, String weightKey, String movementSpeedKey, String amountOfFoodToEatKey, Location location) {
         super(island, weightKey, movementSpeedKey, amountOfFoodToEatKey, location);
         this.timesMoved = 0;
     }
 
+    public void setEatProperties(String chanceToBeEatenByBoa, String chanceToBeEatenByBear, String chanceToBeEatenByEagle) {
+        Properties prop = new Properties();
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("eatconfig.properties")) {
+            prop.load(inputStream);
+            this.chanceToBeEatenByBoa = Integer.parseInt(prop.getProperty(chanceToBeEatenByBoa));
+            this.chanceToBeEatenByBear = Integer.parseInt(prop.getProperty(chanceToBeEatenByBear));
+            this.chanceToBeEatenByEagle = Integer.parseInt(prop.getProperty(chanceToBeEatenByEagle));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void die() {
@@ -17,9 +35,9 @@ public abstract class Predator extends Animal {
             if (getCurrentLocation().getPredators().contains(this)) {
                 setAlive(false);
                 getCurrentLocation().getPredators().remove(this);
+                getCurrentIsland().increasePredatorsDied(1);
             }
         }
-        getCurrentIsland().increasePredatorsDied(1);
     }
 
 
@@ -64,26 +82,6 @@ public abstract class Predator extends Animal {
                 timesMoved++;
             } finally {
                 newLocationLock.unlock();
-            }
-        }
-    }
-
-    @Override
-    public void eat() {
-        if (!isAlive()) return;
-
-        while (getSaturation() < getMaxSaturation()) {
-            Animal target;
-
-            synchronized (getCurrentLocation().getLock()) {
-                if (getCurrentLocation().getHerbivores().isEmpty()) {
-                    break;
-                }
-                target = getCurrentLocation().getHerbivores().getFirst();
-                target.die();
-            }
-            if (target != null) {
-                setSaturation(Math.min(getSaturation() + target.getWeight(), getMaxSaturation()));
             }
         }
     }
