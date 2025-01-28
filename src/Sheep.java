@@ -1,7 +1,8 @@
 public class Sheep extends Herbivorous {
     public Sheep(Island island, Location location) {
         super(island, "sheepWeight", "sheepMovementSpeed", "sheepMaxSaturation", location);
-        super.setEatProperties("boa.sheep", "bear.sheep", "eagle.sheep", "wolf.sheep", "fox.sheep", "mouse.sheep", "boar.sheep", "duck.sheep");
+        super.setEatProperties("boa.sheep", "bear.sheep", "eagle.sheep",
+                "wolf.sheep", "fox.sheep", "mouse.sheep", "boar.sheep", "duck.sheep");
     }
     @Override
     public void reproduce() {

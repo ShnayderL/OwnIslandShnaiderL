@@ -14,6 +14,26 @@ public abstract class Predator extends Animal {
         super(island, weightKey, movementSpeedKey, amountOfFoodToEatKey, location);
         this.timesMoved = 0;
     }
+    public Location getNewLocation(){
+        int dx = ThreadLocalRandom.current().nextInt(-getMovementSpeed(), getMovementSpeed() + 1);
+        int dy = ThreadLocalRandom.current().nextInt(-getMovementSpeed(), getMovementSpeed() + 1);
+
+        int newX = Math.max(0, getCurrentLocation().getCoordinatesOfLocation().getX() + dx);
+        int newY = Math.max(0, getCurrentLocation().getCoordinatesOfLocation().getY() + dy);
+
+        int maxX = this.getCurrentIsland().getISLAND_WIDTH();
+        int maxY = this.getCurrentIsland().getISLAND_HEIGHT();
+
+        newX = (newX + maxX) % maxX;
+        newY = (newY + maxY) % maxY;
+
+        Location newLocation = this.getCurrentIsland().getLocation(new Point(newX, newY));
+        if (newLocation == null) {
+            newLocation = this.getCurrentIsland().getLocation(new Point(0, 0));
+        }
+        return newLocation;
+    }
+
 
     public void setEatProperties(String chanceToBeEatenByBoa, String chanceToBeEatenByBear, String chanceToBeEatenByEagle) {
         Properties prop = new Properties();
@@ -41,6 +61,18 @@ public abstract class Predator extends Animal {
     }
 
 
+    public int getChanceToBeEatenByBoa() {
+        return chanceToBeEatenByBoa;
+    }
+
+    public int getChanceToBeEatenByBear() {
+        return chanceToBeEatenByBear;
+    }
+
+    public int getChanceToBeEatenByEagle() {
+        return chanceToBeEatenByEagle;
+    }
+
     @Override
     public void move() {
         if (!isAlive()) return;
@@ -49,25 +81,7 @@ public abstract class Predator extends Animal {
             die();
             return;
         }
-
-        int dx = ThreadLocalRandom.current().nextInt(-getMovementSpeed(), getMovementSpeed() + 1);
-        int dy = ThreadLocalRandom.current().nextInt(-getMovementSpeed(), getMovementSpeed() + 1);
-
-        int newX = Math.max(0, getCurrentLocation().getCoordinatesOfLocation().getX() + dx);
-        int newY = Math.max(0, getCurrentLocation().getCoordinatesOfLocation().getY() + dy);
-
-        int maxX = this.getCurrentIsland().getISLAND_WIDTH();
-        int maxY = this.getCurrentIsland().getISLAND_HEIGHT();
-
-        newX = (newX + maxX) % maxX;
-        newY = (newY + maxY) % maxY;
-
-        Location newLocation = this.getCurrentIsland().getLocation(new Point(newX, newY));
-        if (newLocation == null) {
-            newLocation = this.getCurrentIsland().getLocation(new Point(0, 0));
-        }
-
-        ReentrantLock currentLock = getCurrentLocation().getLock();
+        Location newLocation = getNewLocation();
         ReentrantLock newLocationLock = newLocation.getLock();
 
         if (newLocationLock.tryLock()) {

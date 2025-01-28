@@ -12,15 +12,19 @@ public class Island {
     private int predatorsBorn = 0;
     private int herbivoresBorn = 0;
     private int herbivoresDied = 0;
+    private String initialStats = "";
 
     public Island(int islandWidth, int islandHeight) {
         ISLAND_WIDTH = islandWidth;
         ISLAND_HEIGHT = islandHeight;
         this.locations = new HashMap<>();
     }
-
     public void simulate(int days, TimeUnit unit, int dayLength) {
-        initializeIslandWithEmptyLocations();
+        System.out.println("Запускаємо симуляцію на "+ days +" днів, острова розміром "
+                + getISLAND_WIDTH() + " на " + getISLAND_HEIGHT()
+                + " локацій. \nОстрів містить таких тварин як: \n"
+                + "Вовки, Удави, Лисиці, Ведмеді, Орли, Коні, Олені, Кролики, Миші, Кози, Вівці, Кабани, Буйволи, Качки, Гусениці");
+        initializeIsland();
 
         ExecutorService executor = Executors.newFixedThreadPool(6);
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -28,22 +32,34 @@ public class Island {
         List<Region> regions = divideIslandIntoRegions();
         long simulationDuration = unit.toSeconds(days * dayLength);
 
-        // Запуск симуляції для кожного регіону
         List<Future<?>> tasks = new ArrayList<>();
         for (Region region : regions) {
             tasks.add(executor.submit(() -> simulateRegion(region, simulationDuration)));
         }
 
-        // Запуск періодичного виводу статистики
-        Runnable statsTask = () -> System.out.println(showPopulation());
+        final int[] currentDay = {1};
+        final long startTime = System.currentTimeMillis();
+        Runnable statsTask = () -> {
+            if (System.currentTimeMillis() - startTime >= simulationDuration * 1000) {
+                System.out.println("Simulation has ended, stopping stats task.");
+                scheduler.shutdown();
+                return; // Stop the task
+            }
+
+            System.out.println("День " + currentDay[0]);
+            System.out.println(showPopulation());
+            currentDay[0]++;
+        };
+
         scheduler.scheduleAtFixedRate(statsTask, 0, dayLength, unit);
         stopSimulation(executor, scheduler, simulationDuration);
-
     }
-    private void stopSimulation(ExecutorService executor, ScheduledExecutorService scheduler, long simulationDuration){
+
+
+    private void stopSimulation(ExecutorService executor, ScheduledExecutorService scheduler, long simulationDuration) {
         executor.shutdown();
         try {
-            if (!executor.awaitTermination(simulationDuration + 10, TimeUnit.SECONDS)) {
+            if (!executor.awaitTermination(simulationDuration, TimeUnit.SECONDS)) {
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {
@@ -52,7 +68,7 @@ public class Island {
 
         scheduler.shutdown();
         try {
-            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+            if (!scheduler.awaitTermination(0, TimeUnit.SECONDS)) {
                 scheduler.shutdownNow();
             }
         } catch (InterruptedException e) {
@@ -64,7 +80,6 @@ public class Island {
         }
         System.out.println("Simulation completed!");
     }
-
 
     public int getISLAND_WIDTH() {
         return ISLAND_WIDTH;
@@ -109,19 +124,17 @@ public class Island {
         }
         return regionLocations;
     }
-
-
-
-    private void initializeIslandWithEmptyLocations() {
+    private void initializeIsland() {
+        Location location;
         for (int x = 0; x < ISLAND_WIDTH; x++) {
             for (int y = 0; y < ISLAND_HEIGHT; y++) {
-                addLocation(x, y, new Location(this, new Point(x, y)));
-                locations.get(new Point(x, y)).init();
+                location = new Location(this, new Point(x, y));
+                addLocation(x, y, location);
+                location.init();
             }
         }
         System.out.println("Острів заселено " + getTotalPopulation() + " тваринами. \n");
     }
-
     private void addLocation(int x, int y, Location location) {
         locations.put(new Point(x, y), location);
     }
@@ -167,7 +180,7 @@ public class Island {
         herbivoresDied = 0;
         int newherbivoresBorn = herbivoresBorn;
         herbivoresBorn = 0;
-        return "Острів налічує: " + plants + herbivores + predators
+        return "Острів налічує: " + getTotalPopulation()
                 + " істот. З яких Хижаків: " + predators + ", Травоїдних: " + herbivores + ", Рослин: " + plants + ".\n"
                 + "Хижаків померло: " + newPredatorsDied + ", народилось: " + newPredatorsBorn + ".\n"
                 + "Травоїдних померло " + newHerbivoresDied + ", народилось: " + newherbivoresBorn + "\n";
@@ -182,7 +195,6 @@ public class Island {
         }
         return sum;
     }
-
     public Map<Point, Location> getLocations() {
         return locations;
     }

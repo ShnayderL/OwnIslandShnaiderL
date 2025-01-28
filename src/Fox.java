@@ -1,16 +1,16 @@
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Wolf extends Predator {
-    public Wolf(Island island, Location location) {
-        super(island, "wolfWeight", "wolfMovementSpeed", "wolfMaxSaturation", location);
-        super.setEatProperties("boa.wolf", "bear.wolf", "eagle.wolf");
+public class Fox extends Predator {
+    public Fox(Island island, Location location) {
+        super(island, "foxWeight", "foxMovementSpeed", "foxMaxSaturation", location);
+        super.setEatProperties("boa.fox", "bear.fox", "eagle.fox");
     }
     @Override
     public void reproduce() {
         if (!isAlive()) return;
         synchronized (getCurrentLocation().getLock()) {
             if (getCurrentLocation().getPredators().size() > 1 && getSaturation() == this.getMaxSaturation()) {
-                getCurrentLocation().getPredators().add(new Wolf(getCurrentIsland(), getCurrentLocation()));
+                getCurrentLocation().getPredators().add(new Fox(getCurrentIsland(), getCurrentLocation()));
                 setSaturation(1);
                 this.getCurrentIsland().increasePredatorsBorn(1);
             }
@@ -28,7 +28,7 @@ public class Wolf extends Predator {
                     break;
                 }
                 target = getCurrentLocation().getHerbivores().getFirst();
-                if(target.getChanceToBeEatenByWolf() == 0 || chance > target.getChanceToBeEatenByWolf()){
+                if(target.getChanceToBeEatenByFox() == 0 || chance > target.getChanceToBeEatenByFox()){
                     break;
                 }
                 target.die();
@@ -43,6 +43,6 @@ public class Wolf extends Predator {
     }
     @Override
     public String toString() {
-        return "\uD83D\uDC3A";
+        return "\uD83E\uDD8A";
     }
 }

@@ -1,24 +1,26 @@
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Wolf extends Predator {
-    public Wolf(Island island, Location location) {
-        super(island, "wolfWeight", "wolfMovementSpeed", "wolfMaxSaturation", location);
-        super.setEatProperties("boa.wolf", "bear.wolf", "eagle.wolf");
+public class Mouse extends Herbivorous {
+    public Mouse(Island island, Location location) {
+        super(island, "mouseWeight", "mouseMovementSpeed", "mouseMaxSaturation", location);
+        super.setEatProperties("boa.mouse", "bear.mouse", "eagle.mouse",
+                "wolf.mouse", "fox.mouse", "mouse.mouse", "boar.mouse", "duck.mouse");
     }
     @Override
     public void reproduce() {
         if (!isAlive()) return;
+
         synchronized (getCurrentLocation().getLock()) {
-            if (getCurrentLocation().getPredators().size() > 1 && getSaturation() == this.getMaxSaturation()) {
-                getCurrentLocation().getPredators().add(new Wolf(getCurrentIsland(), getCurrentLocation()));
+            if (getCurrentLocation().getHerbivores().size() > 1 && getSaturation() == this.getMaxSaturation()) {
+                getCurrentLocation().getHerbivores().add(new Mouse(getCurrentIsland(), getCurrentLocation()));
                 setSaturation(1);
-                this.getCurrentIsland().increasePredatorsBorn(1);
+                this.getCurrentIsland().increaseHerbivoresBorn(1);
             }
         }
     }
     @Override
     public void eat() {
-        if (!isAlive()) return;
+        super.eat();
         while (getSaturation() < getMaxSaturation()) {
             int chance = ThreadLocalRandom.current().nextInt(1, 100);
             Herbivorous target;
@@ -28,7 +30,7 @@ public class Wolf extends Predator {
                     break;
                 }
                 target = getCurrentLocation().getHerbivores().getFirst();
-                if(target.getChanceToBeEatenByWolf() == 0 || chance > target.getChanceToBeEatenByWolf()){
+                if(target.getChanceToBeEatenByMouse() == 0 || chance > target.getChanceToBeEatenByMouse()){
                     break;
                 }
                 target.die();
@@ -43,6 +45,6 @@ public class Wolf extends Predator {
     }
     @Override
     public String toString() {
-        return "\uD83D\uDC3A";
+        return "\uD83D\uDC01";
     }
 }

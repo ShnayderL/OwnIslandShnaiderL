@@ -3,11 +3,11 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public abstract class Animal implements Creature{
-    private int weight;
+    private double weight;
     private int movementSpeed;
-    private int maxSaturation;
+    private double maxSaturation;
     private boolean alive;
-    private int saturation;
+    private double saturation;
     private Location currentLocation;
     private final Island currentIsland;
 
@@ -23,9 +23,9 @@ public abstract class Animal implements Creature{
         Properties prop = new Properties();
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("animalconfig.properties")) {
             prop.load(inputStream);
-            this.weight = Integer.parseInt(prop.getProperty(weightKey));
+            this.weight = Double.parseDouble(prop.getProperty(weightKey));
             this.movementSpeed = Integer.parseInt(prop.getProperty(movementSpeedKey));
-            this.maxSaturation = Integer.parseInt(prop.getProperty(amountOfFoodToEatKey));
+            this.maxSaturation = Double.parseDouble(prop.getProperty(amountOfFoodToEatKey));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -39,11 +39,11 @@ public abstract class Animal implements Creature{
         this.alive = alive;
     }
 
-    public int getSaturation() {
+    public double getSaturation() {
         return saturation;
     }
 
-    public void setSaturation(int saturation) {
+    public void setSaturation(double saturation) {
         this.saturation = saturation;
     }
 
@@ -54,7 +54,7 @@ public abstract class Animal implements Creature{
     public void setCurrentLocation(Location currentLocation) {
         this.currentLocation = currentLocation;
     }
-    public int getWeight() {
+    public double getWeight() {
         return this.weight;
     }
 
@@ -66,7 +66,7 @@ public abstract class Animal implements Creature{
         return currentIsland;
     }
 
-    public int getMaxSaturation() {
+    public double getMaxSaturation() {
         return maxSaturation;
     }
 

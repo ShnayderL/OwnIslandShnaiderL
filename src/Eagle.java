@@ -1,16 +1,16 @@
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Wolf extends Predator {
-    public Wolf(Island island, Location location) {
-        super(island, "wolfWeight", "wolfMovementSpeed", "wolfMaxSaturation", location);
-        super.setEatProperties("boa.wolf", "bear.wolf", "eagle.wolf");
+public class Eagle extends Predator{
+    public Eagle(Island island, Location location) {
+        super(island, "eagleWeight", "eagleMovementSpeed", "eagleMaxSaturation", location);
+        super.setEatProperties("boa.eagle", "bear.eagle", "eagle.eagle");
     }
     @Override
     public void reproduce() {
         if (!isAlive()) return;
         synchronized (getCurrentLocation().getLock()) {
             if (getCurrentLocation().getPredators().size() > 1 && getSaturation() == this.getMaxSaturation()) {
-                getCurrentLocation().getPredators().add(new Wolf(getCurrentIsland(), getCurrentLocation()));
+                getCurrentLocation().getPredators().add(new Eagle(getCurrentIsland(), getCurrentLocation()));
                 setSaturation(1);
                 this.getCurrentIsland().increasePredatorsBorn(1);
             }
@@ -28,7 +28,23 @@ public class Wolf extends Predator {
                     break;
                 }
                 target = getCurrentLocation().getHerbivores().getFirst();
-                if(target.getChanceToBeEatenByWolf() == 0 || chance > target.getChanceToBeEatenByWolf()){
+                if(target.getChanceToBeEatenByEagle() == 0 || chance > target.getChanceToBeEatenByEagle()){
+                    break;
+                }
+                target.die();
+                setSaturation(Math.min(getSaturation() + target.getWeight(), getMaxSaturation()));
+            }
+        }
+        while (getSaturation() < getMaxSaturation()) {
+            int chance = ThreadLocalRandom.current().nextInt(1, 100);
+            Predator target;
+
+            synchronized (getCurrentLocation().getLock()) {
+                if (getCurrentLocation().getHerbivores().isEmpty()) {
+                    break;
+                }
+                target = getCurrentLocation().getPredators().getFirst();
+                if(target.getChanceToBeEatenByEagle() == 0 || chance > target.getChanceToBeEatenByEagle()){
                     break;
                 }
                 target.die();
@@ -43,6 +59,6 @@ public class Wolf extends Predator {
     }
     @Override
     public String toString() {
-        return "\uD83D\uDC3A";
+        return "\uD83E\uDD85";
     }
 }

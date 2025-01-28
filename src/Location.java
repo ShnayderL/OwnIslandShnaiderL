@@ -1,6 +1,8 @@
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
@@ -44,25 +46,56 @@ public class Location {
         if (isInitialized) return; // Якщо вже ініціалізовано, вийти.
 
         Properties prop = new Properties();
-        int wolfMaxAmountOnLocation = 0;
-        int sheepMaxAmountOnLocation = 0;
-        int plantMaxAmountOnLocation = 0;
+        Map<String, Integer> maxAmounts = new HashMap<>();
 
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("animalconfig.properties")) {
             if (inputStream == null) {
                 throw new IOException("Configuration file not found!");
             }
+
             prop.load(inputStream);
-            wolfMaxAmountOnLocation = parseConfig(prop, "wolfMaxAmountOnLocation");
-            sheepMaxAmountOnLocation = parseConfig(prop, "sheepMaxAmountOnLocation");
-            plantMaxAmountOnLocation = parseConfig(prop, "plantMaxAmountOnLocation");
+
+            // Зчитуємо максимальну кількість кожної тварини чи рослини з конфігурації
+            maxAmounts.put("wolfMaxAmountOnLocation", parseConfig(prop, "wolfMaxAmountOnLocation"));
+            maxAmounts.put("sheepMaxAmountOnLocation", parseConfig(prop, "sheepMaxAmountOnLocation"));
+            maxAmounts.put("plantMaxAmountOnLocation", parseConfig(prop, "plantMaxAmountOnLocation"));
+            maxAmounts.put("foxMaxAmountOnLocation", parseConfig(prop, "foxMaxAmountOnLocation"));
+            maxAmounts.put("bearMaxAmountOnLocation", parseConfig(prop, "bearMaxAmountOnLocation"));
+            maxAmounts.put("boaMaxAmountOnLocation", parseConfig(prop, "boaMaxAmountOnLocation"));
+            maxAmounts.put("boarMaxAmountOnLocation", parseConfig(prop, "boarMaxAmountOnLocation"));
+            maxAmounts.put("buffaloMaxAmountOnLocation", parseConfig(prop, "buffaloMaxAmountOnLocation"));
+            maxAmounts.put("caterpillarMaxAmountOnLocation", parseConfig(prop, "caterpillarMaxAmountOnLocation"));
+            maxAmounts.put("deerMaxAmountOnLocation", parseConfig(prop, "deerMaxAmountOnLocation"));
+            maxAmounts.put("duckMaxAmountOnLocation", parseConfig(prop, "duckMaxAmountOnLocation"));
+            maxAmounts.put("eagleMaxAmountOnLocation", parseConfig(prop, "eagleMaxAmountOnLocation"));
+            maxAmounts.put("goatMaxAmountOnLocation", parseConfig(prop, "goatMaxAmountOnLocation"));
+            maxAmounts.put("horseMaxAmountOnLocation", parseConfig(prop, "horseMaxAmountOnLocation"));
+            maxAmounts.put("mouseMaxAmountOnLocation", parseConfig(prop, "mouseMaxAmountOnLocation"));
+            maxAmounts.put("rabbitMaxAmountOnLocation", parseConfig(prop, "rabbitMaxAmountOnLocation"));
+
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
 
-        populateEntities(predators, wolfMaxAmountOnLocation, () -> new Wolf(island, this));
-        populateEntities(herbivores, sheepMaxAmountOnLocation, () -> new Sheep(island, this));
-        populateEntities(plants, plantMaxAmountOnLocation, () -> new Plant(island, this));
+        // Ініціалізація сутностей
+        populateEntities(predators, maxAmounts.get("wolfMaxAmountOnLocation"), () -> new Wolf(island, this));
+        populateEntities(herbivores, maxAmounts.get("sheepMaxAmountOnLocation"), () -> new Sheep(island, this));
+        populateEntities(plants, maxAmounts.get("plantMaxAmountOnLocation"), () -> new Plant(island, this));
+        populateEntities(predators, maxAmounts.get("foxMaxAmountOnLocation"), () -> new Fox(island, this));
+        populateEntities(predators, maxAmounts.get("bearMaxAmountOnLocation"), () -> new Bear(island, this));
+        populateEntities(predators, maxAmounts.get("boaMaxAmountOnLocation"), () -> new Boa(island, this));
+        populateEntities(herbivores, maxAmounts.get("boarMaxAmountOnLocation"), () -> new Boar(island, this));
+        populateEntities(herbivores, maxAmounts.get("buffaloMaxAmountOnLocation"), () -> new Buffalo(island, this));
+        populateEntities(herbivores, maxAmounts.get("caterpillarMaxAmountOnLocation"), () -> new Caterpillar(island, this));
+        populateEntities(herbivores, maxAmounts.get("deerMaxAmountOnLocation"), () -> new Deer(island, this));
+        populateEntities(herbivores, maxAmounts.get("duckMaxAmountOnLocation"), () -> new Duck(island, this));
+        populateEntities(predators, maxAmounts.get("eagleMaxAmountOnLocation"), () -> new Eagle(island, this));
+        populateEntities(herbivores, maxAmounts.get("goatMaxAmountOnLocation"), () -> new Goat(island, this));
+        populateEntities(herbivores, maxAmounts.get("horseMaxAmountOnLocation"), () -> new Horse(island, this));
+        populateEntities(herbivores, maxAmounts.get("mouseMaxAmountOnLocation"), () -> new Mouse(island, this));
+        populateEntities(herbivores, maxAmounts.get("rabbitMaxAmountOnLocation"), () -> new Rabbit(island, this));
+
         isInitialized = true;
     }
 
